@@ -10,6 +10,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.onefactorrouter.rule=Host(`onefactor.auth.com`)'
       - 'traefik.http.routers.onefactorrouter.entrypoints=web'
+      - 'traefik.http.routers.onefactorrouter.middlewares=authelia@docker'
     networks:
       - auth_net
 
@@ -22,6 +23,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.securerouter.rule=Host(`secure.auth.com`)'
       - 'traefik.http.routers.securerouter.entrypoints=web'
+      - 'traefik.http.routers.securerouter.middlewares=authelia@docker'
     networks:
       - auth_net
   
@@ -58,7 +60,7 @@ services:
       - 'traefik.http.routers.authenticatingrouter.rule=Host(`authelia.auth.com`)'
       - 'traefik.http.routers.authenticatingrouter.entrypoints=web'
       - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
-      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/authz/forward-auth?authelia-url=https://authelia.auth.com'
+      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=http://authelia.auth.com'
       - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
     networks:
       - auth_net
