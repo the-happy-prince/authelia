@@ -10,9 +10,8 @@ services:
       - 'traefik.enable=true'
       - "traefik.http.routers.onefactorrouter.tls=true"
       - "traefik.http.routers.onefactorrouter.tls.certresolver=letsencrypt"
-      - 'traefik.http.routers.onefactorrouter.rule=Host(`onefactor.auth.com`)'
-      # - 'traefik.http.routers.onefactorrouter.entrypoints=web'
-      # - 'traefik.http.routers.onefactorrouter.middlewares=authelia@docker'
+      - 'traefik.http.routers.onefactorrouter.rule=Host(`onefactor.anytypecompute.com`)'
+      - 'traefik.http.routers.onefactorrouter.middlewares=authelia@docker'
     networks:
       - auth_net
 
@@ -25,9 +24,8 @@ services:
       - 'traefik.enable=true'
       - "traefik.http.routers.securerouter.tls=true"
       - "traefik.http.routers.securerouter.tls.certresolver=letsencrypt"
-      - 'traefik.http.routers.securerouter.rule=Host(`secure.auth.com`)'
-      # - 'traefik.http.routers.securerouter.entrypoints=web'
-      # - 'traefik.http.routers.securerouter.middlewares=authelia@docker'
+      - 'traefik.http.routers.securerouter.rule=Host(`secure.anytypecompute.com`)'
+      - 'traefik.http.routers.securerouter.middlewares=authelia@docker'
     networks:
       - auth_net
   
@@ -38,44 +36,44 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      # HTTPS
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.email=princeraj@tuta.io"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.storage=./letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.traefikpublicrouter.rule=Host(`public.auth.com`)'
-      - 'traefik.http.routers.traefikpublicrouter.entrypoints=web'
-      - 'traefik.http.services.traefikpublicrouter.loadbalancer.server.port=8080'
+      - "traefik.http.routers.traefikuirouter.tls=true"
+      - "traefik.http.routers.traefikuirouter.tls.certresolver=letsencrypt"
+      - 'traefik.http.routers.traefikuirouter.rule=Host(`public.anytypecompute.com`)'
+      - 'traefik.http.services.traefikuirouter.loadbalancer.server.port=8080'
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
     networks:
       - auth_net
 
-  # authelia:
-  #   container_name: authelia
-  #   image: authelia/authelia:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./authelia:/config
-  #   ports:
-  #     - "9091:9091"
-  #   labels:
-  #     - 'traefik.enable=true'
-  #     - 'traefik.http.routers.authenticatingrouter.rule=Host(`authelia.auth.com`)'
-  #     - 'traefik.http.routers.authenticatingrouter.entrypoints=web'
-  #     - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
-  #     - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=http://authelia.auth.com'
-  #     - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-  #   networks:
-  #     - auth_net
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: unless-stopped
+    volumes:
+      - ./authelia:/config
+    ports:
+      - "9091:9091"
+    labels:
+      - 'traefik.enable=true'
+      - "traefik.http.routers.authenticatingrouter.tls=true"
+      - "traefik.http.routers.authenticatingrouter.tls.certresolver=letsencrypt"
+      - 'traefik.http.routers.authenticatingrouter.rule=Host(`authelia.anytypecompute.com`)'
+      - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://authelia.anytypecompute.com'
+      - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+    networks:
+      - auth_net
 
 networks:
   auth_net:
