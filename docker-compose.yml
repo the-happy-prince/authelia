@@ -1,0 +1,49 @@
+version: '3'
+services:
+  
+  onefactorapp:
+    image: python:3.11.2-slim-buster
+    command: python -m http.server 8011
+    ports:
+      - "8011:8011"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.onefactorrouter.rule=Host(`onefactor.auth.com`)'
+      - 'traefik.http.routers.onefactorrouter.entrypoints=web'
+    networks:
+      - auth_net
+
+  secureapp:
+    image: python:3.11.2-slim-buster
+    command: python -m http.server 8012
+    ports:
+      - "8012:8012"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.securerouter.rule=Host(`secure.auth.com`)'
+      - 'traefik.http.routers.securerouter.entrypoints=web'
+    networks:
+      - auth_net
+  
+  traefik:
+    image: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefikpublicrouter.rule=Host(`public.auth.com`)'
+      - 'traefik.http.routers.traefikpublicrouter.entrypoints=web'
+      - 'traefik.http.services.traefikpublicrouter.loadbalancer.server.port=8080'
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - auth_net
+
+networks:
+  auth_net:
