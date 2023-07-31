@@ -45,5 +45,23 @@ services:
     networks:
       - auth_net
 
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: unless-stopped
+    volumes:
+      - ./authelia:/config
+    ports:
+      - "9091:9091"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.authenticatingrouter.rule=Host(`authelia.auth.com`)'
+      - 'traefik.http.routers.authenticatingrouter.entrypoints=web'
+      - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/authz/forward-auth?authelia-url=https://authelia.auth.com'
+      - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+    networks:
+      - auth_net
+
 networks:
   auth_net:
